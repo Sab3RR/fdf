@@ -9,8 +9,10 @@
 # include <time.h>
 # include <stdlib.h>
 # include "libft/libft.h"
+# include "get_next_line.h"
 # include <math.h>
 # include <time.h>
+# include <fcntl.h>
 
 typedef struct	s_init
 {

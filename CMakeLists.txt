@@ -64,4 +64,4 @@ add_executable(fdf main.c libft/ft_memset.c
         libft/ft_lstiter.c
         libft/ft_lstmap.c
         libft/ft_strdup.c
-        libft/ft_lstpushback.c libft/ft_findichar.c libft/ft_strnjoin.c libft/ft_lstfree.c libft/ft_fill_list.c libft/ft_read_list.c libft/ft_swap.c fdf.h)
+        libft/ft_lstpushback.c libft/ft_findichar.c libft/ft_strnjoin.c libft/ft_lstfree.c libft/ft_fill_list.c libft/ft_read_list.c libft/ft_swap.c get_next_line.c get_next_line.h fdf.h)

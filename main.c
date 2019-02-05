@@ -237,12 +237,16 @@ t_init	*malloc_init(void)
 
 }
 
-int main() {
+int main(int ac, char **av) {
 
 	t_init *init;
+	int fd;
 
 //	mlx_ptr = mlx_init();
 //	win_ptr = mlx_new_window(mlx_ptr, 1920, 1280, "mlx");
+	if (ac != 2)
+		exit(1);
+	fd = open(av[1], O_RDONLY);
 	if (!(init = malloc_init()))
 		exit(1);
 	mlx_ptr = init->mlx_ptr;

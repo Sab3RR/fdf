@@ -17,6 +17,7 @@
 # include <stdlib.h>
 
 # define IS_SPACE(x) (x == ' '||x == '\n'||x == '\t')
+# define abs(x) (x > 0 ? x : -x)
 
 void				ft_putchar(char c);
 void				ft_putstr(char const *str);
@@ -107,5 +108,6 @@ t_list				*ft_lstfree(t_list *alst);
 int					ft_fill_list(char *str, t_list **list);
 int					ft_read_list(char **line, t_list **array,
 						int fd, int (*create_list)(int fd, t_list **array));
+void				ft_swap(int *a1, int *a2);
 
 #endif

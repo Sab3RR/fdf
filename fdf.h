@@ -14,11 +14,20 @@
 # include <time.h>
 # include <fcntl.h>
 
+typedef struct	s_map
+{
+	int			**map;
+	int 		width;
+	int 		height;
+}				t_map;
+
 typedef struct	s_init
 {
 	void		*mlx_ptr;
 	void		*win_ptr;
 	int			coords[5];
 	char 		button;
+	t_map		*s_map;
+
 }				t_init;
 #endif //FDF_FDF_H

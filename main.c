@@ -8,6 +8,30 @@ int coords[5] = {0, 0, 0, 0, 0};
 //{
 //
 //}
+
+void	draw_map(t_init *init)
+{
+	int i;
+	int j;
+	int width = 0;
+	int height = 0;
+
+	i = 0;
+	while (i < init->s_map->height)
+	{
+		j = 0;
+		width = 0;
+		while (j < init->s_map->width)
+		{
+			mlx_string_put(init->mlx_ptr, init->win_ptr, width, height, 0x00FA0C1D, ft_itoa((init->s_map->map)[i][j]));
+			width += 20;
+			j++;
+		}
+		height += 20;
+		i++;
+	}
+}
+
 void line(int x0, int y0, int x1, int y1, int color) {
 //	double size;
 //
@@ -133,11 +157,12 @@ int		move_mouse(int x, int y, t_init *init)
 		init->coords[3] = y;
 		init->coords[4] = 0;
 	}
-	mlx_clear_window(mlx_ptr, win_ptr);
-	mlx_string_put(mlx_ptr, win_ptr, 250, 250, 0x00FA0C1D, ft_itoa(button));
-	mlx_string_put(mlx_ptr, win_ptr, 250, 270, 0x00FA0C1D, ft_itoa(x));
-	mlx_string_put(mlx_ptr, win_ptr, 300, 270, 0x00FA0C1D, ft_itoa(y));
+	mlx_clear_window(init->mlx_ptr, init->win_ptr);
+	mlx_string_put(init->mlx_ptr, init->win_ptr, 250, 250, 0x00FA0C1D, ft_itoa(button));
+	mlx_string_put(init->mlx_ptr, init->win_ptr, 250, 270, 0x00FA0C1D, ft_itoa(x));
+	mlx_string_put(init->mlx_ptr, init->win_ptr, 300, 270, 0x00FA0C1D, ft_itoa(y));
 	line(200, 200, 200, 300, 0x00FA0C1D);
+	draw_map(init);
 	line(init->coords[0], init->coords[1], init->coords[2], init->coords[3], 0x00FA0C1D);
 	return (0);
 }
@@ -162,11 +187,12 @@ int		deal_key(int button, int x, int y, t_init *init)
 		init->coords[4] = 0;
 		init->button = 2;
 	}
-	mlx_clear_window(mlx_ptr, win_ptr);
-	mlx_string_put(mlx_ptr, win_ptr, 250, 250, 0x00FA0C1D, ft_itoa(button));
-	mlx_string_put(mlx_ptr, win_ptr, 250, 270, 0x00FA0C1D, ft_itoa(x));
-	mlx_string_put(mlx_ptr, win_ptr, 300, 270, 0x00FA0C1D, ft_itoa(y));
+	mlx_clear_window(init->mlx_ptr, init->win_ptr);
+	mlx_string_put(init->mlx_ptr, init->win_ptr, 250, 250, 0x00FA0C1D, ft_itoa(button));
+	mlx_string_put(init->mlx_ptr, init->win_ptr, 250, 270, 0x00FA0C1D, ft_itoa(x));
+	mlx_string_put(init->mlx_ptr, init->win_ptr, 300, 270, 0x00FA0C1D, ft_itoa(y));
 	line(200, 200, 200, 300, 0x00FA0C1D);
+	draw_map(init);
 	clock_t t = clock();
 	line(init->coords[0], init->coords[1], init->coords[2], init->coords[3], 0x00FA0C1D);
 
@@ -219,7 +245,91 @@ int		key_realise(int button, int x, int y, t_init *init)
 //	return (0);
 }
 
-t_init	*malloc_init(void)
+int count_width(char *line)
+{
+	int	width;
+
+	width = 0;
+	while (*line)
+	{
+		if (*line == ' ')
+			line++;
+		else if (*line <= '9' && *line >= '0')
+		{
+			width++;
+			while (*line <= '9' && *line >= '0')
+				line++;
+		}
+		else
+			return (0);
+	}
+	return (width);
+}
+
+int	*atoi_line(char *line, int width)
+{
+	int *int_line;
+	int i;
+
+	i = 0;
+	if(!(int_line = (int *)malloc(sizeof(int) * width)))
+		return (0);
+	while (*line)
+	{
+		if (*line <= '9' && *line >= '0')
+		{
+			int_line[i] = ft_atoi(line);
+			i++;
+			while (*line <= '9' && *line >= '0')
+				line++;
+		}
+		line++;
+	}
+	return (int_line);
+}
+
+t_map	*fill_map(char *line, t_map *map)
+{
+	void	*tmp;
+
+	tmp = (void *)map->map;
+	if (!(map->map = (int**)malloc(sizeof(int *) * (map->height + 1))))
+		return (0);
+	ft_memcpy(map->map, tmp, sizeof(int *) * map->height);
+	if (map->width != count_width(line))
+		return(0);
+	(map->map)[map->height++] = atoi_line(line, map->width);
+	free(tmp);
+	free(line);
+	return (map);
+}
+
+t_map	*malloc_map(int fd)
+{
+	t_map	*map;
+	char 	*line;
+
+	if (!(map = (t_map*)malloc(sizeof(t_map))))
+		return (0);
+	if ((get_next_line(fd, &line) <= 0))
+		return (0);
+	if (!(map->width = count_width(line)))
+		return (0);
+	if (!(map->map = (int**)malloc(sizeof(int *))))
+		return (0);
+	*(map->map) = atoi_line(line, map->width);
+	map->height = 1;
+	free(line);
+	while (get_next_line(fd, &line) > 0)
+	{
+		if (!(fill_map(line, map)))
+			return (0);
+	}
+	return (map);
+
+}
+
+t_init	*malloc_init(int fd)
 {
 	t_init	*init;
 
@@ -233,6 +343,7 @@ t_init	*malloc_init(void)
 	init->coords[3] = 0;
 	init->coords[4] = 0;
 	init->button = 0;
+	init->s_map = malloc_map(fd);
 	return (init);
 
 }
@@ -244,10 +355,12 @@ int main(int ac, char **av) {
 
 //	mlx_ptr = mlx_init();
 //	win_ptr = mlx_new_window(mlx_ptr, 1920, 1280, "mlx");
-	if (ac != 2)
+//	if (ac != 2)
+//		exit(1);
+	fd = open("42.fdf", O_RDONLY);
+	if (fd < 0)
 		exit(1);
-	fd = open(av[1], O_RDONLY);
-	if (!(init = malloc_init()))
+	if (!(init = malloc_init(fd)))
 		exit(1);
 	mlx_ptr = init->mlx_ptr;
 	win_ptr = init->win_ptr;

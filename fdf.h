@@ -19,6 +19,7 @@ typedef struct	s_map
 	int			**map;
 	int 		width;
 	int 		height;
+	double 		scale;
 }				t_map;
 
 typedef struct	s_init

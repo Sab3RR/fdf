@@ -9,28 +9,33 @@ int coords[5] = {0, 0, 0, 0, 0};
 //
 //}
 
-void	draw_map(t_init *init)
-{
-	int i;
-	int j;
-	int width = 0;
-	int height = 0;
+//void	draw_map(t_init *init)
+//{
+//	int i;
+//	int j;
+//	int width = 0;
+//	int height = 0;
+//	char	*str;
+//
+//	i = 0;
+//	while (i < init->s_map->height)
+//	{
+//		j = 0;
+//		width = 0;
+//		while (j < init->s_map->width)
+//		{
+//			str = ft_itoa((init->s_map->map)[i][j]);
+//			mlx_string_put(init->mlx_ptr, init->win_ptr, width, height, 0x00FA0C1D, str);
+//			free(str);
+//			width += 40;
+//			j++;
+//		}
+//		height += 40;
+//		i++;
+//	}
+//}
 
-	i = 0;
-	while (i < init->s_map->height)
-	{
-		j = 0;
-		width = 0;
-		while (j < init->s_map->width)
-		{
-			mlx_string_put(init->mlx_ptr, init->win_ptr, width, height, 0x00FA0C1D, ft_itoa((init->s_map->map)[i][j]));
-			width += 20;
-			j++;
-		}
-		height += 20;
-		i++;
-	}
-}
+
 
 void line(int x0, int y0, int x1, int y1, int color) {
 //	double size;
@@ -141,6 +146,42 @@ void line(int x0, int y0, int x1, int y1, int color) {
 		}
 
 }
+
+void	draw_map(t_init *init)
+{
+	int i;
+	int	j;
+
+	i = 0;
+	while (i < init->s_map->height)
+	{
+		j = 0;
+		while (j < init->s_map->width)
+		{
+			if (i == 0 && j == 0)
+			{
+				j++;
+				continue ;
+			}
+			else if (i == 0 && j > 0)
+			{
+				line((int)(j * 10 * init->s_map->scale),(int)( i * 10 * init->s_map->scale), (int)((j - 1) * 10 * init->s_map->scale), (int)(i * 10 * init->s_map->scale), 0x00FA0C1D);
+			}
+			else if (i != 0 && j != 0)
+			{
+				line((int)(j * 10 * init->s_map->scale),(int)( i * 10 * init->s_map->scale), (int)((j - 1) * 10 * init->s_map->scale), (int)(i * 10 * init->s_map->scale), 0x00FA0C1D);
+				line((int)(j * 10 * init->s_map->scale),(int)( i * 10 * init->s_map->scale), (int)(j * 10 * init->s_map->scale), (int)((i - 1) * 10 * init->s_map->scale), 0x00FA0C1D);
+			}
+			else if (i != 0 && j == 0)
+			{
+				line((int)(j * 10 * init->s_map->scale),(int)( i * 10 * init->s_map->scale), (int)(j * 10 * init->s_map->scale), (int)((i - 1) * 10 * init->s_map->scale), 0x00FA0C1D);
+			}
+			j++;
+		}
+		i++;
+	}
+}
+
 int		move_mouse(int x, int y, t_init *init)
 {
 	int button = (int)init->button;
@@ -157,11 +198,12 @@ int		move_mouse(int x, int y, t_init *init)
 		init->coords[3] = y;
 		init->coords[4] = 0;
 	}
+
 	mlx_clear_window(init->mlx_ptr, init->win_ptr);
-	mlx_string_put(init->mlx_ptr, init->win_ptr, 250, 250, 0x00FA0C1D, ft_itoa(button));
-	mlx_string_put(init->mlx_ptr, init->win_ptr, 250, 270, 0x00FA0C1D, ft_itoa(x));
-	mlx_string_put(init->mlx_ptr, init->win_ptr, 300, 270, 0x00FA0C1D, ft_itoa(y));
-	line(200, 200, 200, 300, 0x00FA0C1D);
+//	mlx_string_put(init->mlx_ptr, init->win_ptr, 250, 250, 0x00FA0C1D, ft_itoa(button));
+//	mlx_string_put(init->mlx_ptr, init->win_ptr, 250, 270, 0x00FA0C1D, ft_itoa(x));
+//	mlx_string_put(init->mlx_ptr, init->win_ptr, 300, 270, 0x00FA0C1D, ft_itoa(y));
+//	line(200, 200, 200, 300, 0x00FA0C1D);
 	draw_map(init);
 	line(init->coords[0], init->coords[1], init->coords[2], init->coords[3], 0x00FA0C1D);
 	return (0);
@@ -187,11 +229,22 @@ int		deal_key(int button, int x, int y, t_init *init)
 		init->coords[4] = 0;
 		init->button = 2;
 	}
+	else if (button == 4)
+	{
+		init->s_map->scale += 0.1;
+	}
+	else if (button == 5)
+	{
+		if (init->s_map->scale > 0.1)
+		{
+			init->s_map->scale -= 0.1;
+		}
+	}
 	mlx_clear_window(init->mlx_ptr, init->win_ptr);
-	mlx_string_put(init->mlx_ptr, init->win_ptr, 250, 250, 0x00FA0C1D, ft_itoa(button));
-	mlx_string_put(init->mlx_ptr, init->win_ptr, 250, 270, 0x00FA0C1D, ft_itoa(x));
-	mlx_string_put(init->mlx_ptr, init->win_ptr, 300, 270, 0x00FA0C1D, ft_itoa(y));
-	line(200, 200, 200, 300, 0x00FA0C1D);
+//	mlx_string_put(init->mlx_ptr, init->win_ptr, 250, 250, 0x00FA0C1D, ft_itoa(button));
+//	mlx_string_put(init->mlx_ptr, init->win_ptr, 250, 270, 0x00FA0C1D, ft_itoa(x));
+//	mlx_string_put(init->mlx_ptr, init->win_ptr, 300, 270, 0x00FA0C1D, ft_itoa(y));
+//	line(200, 200, 200, 300, 0x00FA0C1D);
 	draw_map(init);
 	clock_t t = clock();
 	line(init->coords[0], init->coords[1], init->coords[2], init->coords[3], 0x00FA0C1D);
@@ -254,9 +307,12 @@ int count_width(char *line)
 	{
 		if (*line == ' ')
 			line++;
-		else if (*line <= '9' && *line >= '0')
+		else if ((*line <= '9' && *line >= '0') || *line == '-')
 		{
 			width++;
+			line++;
+			if (*line == '-')
+				return (0);
 			while (*line <= '9' && *line >= '0')
 				line++;
 		}
@@ -276,11 +332,11 @@ int	*atoi_line(char *line, int width)
 		return (0);
 	while (*line)
 	{
-		if (*line <= '9' && *line >= '0')
+		if ((*line <= '9' && *line >= '0') || *line == '-')
 		{
 			int_line[i] = ft_atoi(line);
 			i++;
-			while (*line <= '9' && *line >= '0')
+			while ((*line <= '9' && *line >= '0') || *line == '-')
 				line++;
 		}
 		line++;
@@ -325,6 +381,7 @@ t_map	*malloc_map(int fd)
 		if (!(fill_map(line, map)))
 			return (0);
 	}
+	free(line);
 	return (map);
 
 }
@@ -336,7 +393,7 @@ t_init	*malloc_init(int fd)
 	if (!(init = (t_init*)malloc(sizeof(t_init))))
 		return (0);
 	init->mlx_ptr = mlx_init();
-	init->win_ptr = mlx_new_window(init->mlx_ptr, 1920, 1280, "mlx");
+	init->win_ptr = mlx_new_window(init->mlx_ptr, 1920, 1080, "mlx");
 	init->coords[0] = 0;
 	init->coords[1] = 0;
 	init->coords[2] = 0;
@@ -344,6 +401,7 @@ t_init	*malloc_init(int fd)
 	init->coords[4] = 0;
 	init->button = 0;
 	init->s_map = malloc_map(fd);
+	init->s_map->scale = 0.1;
 	return (init);
 
 }
@@ -357,14 +415,13 @@ int main(int ac, char **av) {
 //	win_ptr = mlx_new_window(mlx_ptr, 1920, 1280, "mlx");
 //	if (ac != 2)
 //		exit(1);
-	fd = open("42.fdf", O_RDONLY);
+	fd = open("100-6.fdf", O_RDONLY);
 	if (fd < 0)
 		exit(1);
 	if (!(init = malloc_init(fd)))
 		exit(1);
 	mlx_ptr = init->mlx_ptr;
 	win_ptr = init->win_ptr;
-    mlx_pixel_put(init->mlx_ptr, init->win_ptr, 250, 250, 0x00FA0C1D);
 	mlx_hook(init->win_ptr, 4, (1L << 17), deal_key, init);
 	mlx_hook(init->win_ptr, 5, (1L << 17), key_realise, init);
 	mlx_hook(win_ptr, 6, (1L << 17), move_mouse, init);

@@ -147,6 +147,22 @@ void line(int x0, int y0, int x1, int y1, int color) {
 
 }
 
+void	normalization(t_init *init)
+{
+	int map_x;
+	int map_y;
+
+	map_x = (int)(init->k * (init->s_map->width - 1) * cos(init->rad_x));
+	init->n_x = (1920 - map_x)/2;
+	map_y = (int)(init->k * (init->s_map->height - 1) * cos(init->rad_y));
+	init->n_y = (1080 - map_y)/2;
+}
+
+void	k_init(t_init *init)
+{
+	init->k = init->s_map->scale;
+}
+
 void	draw_map(t_init *init)
 {
 	int i;
@@ -163,18 +179,19 @@ void	draw_map(t_init *init)
 				j++;
 				continue ;
 			}
+
 			else if (i == 0 && j > 0)
 			{
-				line((int)(j * 10 * init->s_map->scale),(int)( i * 10 * init->s_map->scale), (int)((j - 1) * 10 * init->s_map->scale), (int)(i * 10 * init->s_map->scale), 0x00FA0C1D);
+				line((int)((j * init->k) * cos(init->rad_x) + init->n_x), (int)((i * init->k) * cos(init->rad_y) + init->n_y), (int)(((j - 1) * init->k) * cos(init->rad_x) + init->n_x), (int)((i * init->k) * cos(init->rad_y) + init->n_y), 0x00FA0C1D);
 			}
 			else if (i != 0 && j != 0)
 			{
-				line((int)(j * 10 * init->s_map->scale),(int)( i * 10 * init->s_map->scale), (int)((j - 1) * 10 * init->s_map->scale), (int)(i * 10 * init->s_map->scale), 0x00FA0C1D);
-				line((int)(j * 10 * init->s_map->scale),(int)( i * 10 * init->s_map->scale), (int)(j * 10 * init->s_map->scale), (int)((i - 1) * 10 * init->s_map->scale), 0x00FA0C1D);
+				line((int)((j * init->k) * cos(init->rad_x) + init->n_x), (int)((i * init->k) * cos(init->rad_y) + init->n_y), (int)(((j - 1) * init->k) * cos(init->rad_x) + init->n_x), (int)((i * init->k) * cos(init->rad_y) + init->n_y), 0x00FA0C1D);
+				line((int)((j * init->k) * cos(init->rad_x) + init->n_x), (int)((i * init->k) * cos(init->rad_y) + init->n_y), (int)((j * init->k) * cos(init->rad_x) + init->n_x), (int)(((i - 1) * init->k) * cos(init->rad_y) + init->n_y), 0x00FA0C1D);
 			}
 			else if (i != 0 && j == 0)
 			{
-				line((int)(j * 10 * init->s_map->scale),(int)( i * 10 * init->s_map->scale), (int)(j * 10 * init->s_map->scale), (int)((i - 1) * 10 * init->s_map->scale), 0x00FA0C1D);
+				line((j * init->k) + init->n_x, (int)((i * init->k) * cos(init->rad_y) + init->n_y), (j * init->k) + init->n_x, (int)(((i - 1) * init->k) * cos(init->rad_y) + init->n_y), 0x00FA0C1D);
 			}
 			j++;
 		}
@@ -188,24 +205,37 @@ int		move_mouse(int x, int y, t_init *init)
 
 	if (button == 1)
 	{
-		init->coords[0] = x;
-		init->coords[1] = y;
-		init->coords[4] = 1;
+		if (init->last_y != -1)
+		{
+			init->rad_y += (y - init->last_y) * 0.0014544 * 4;
+			init->last_y = y;
+		}
+		else
+		{
+			init->last_y = y;
+		}
+		if (init->last_x != -1)
+		{
+			init->rad_x += (x - init->last_x) * 0.0014544 * 4;
+			init->last_x = x;
+		}
+		else
+		{
+			init->last_x = x;
+		}
+		normalization(init);
 	}
-	else if (button == 2)
+	else
 	{
-		init->coords[2] = x;
-		init->coords[3] = y;
-		init->coords[4] = 0;
+		init->last_y = -1;
+		init->last_x = -1;
 	}
-
 	mlx_clear_window(init->mlx_ptr, init->win_ptr);
 //	mlx_string_put(init->mlx_ptr, init->win_ptr, 250, 250, 0x00FA0C1D, ft_itoa(button));
 //	mlx_string_put(init->mlx_ptr, init->win_ptr, 250, 270, 0x00FA0C1D, ft_itoa(x));
 //	mlx_string_put(init->mlx_ptr, init->win_ptr, 300, 270, 0x00FA0C1D, ft_itoa(y));
 //	line(200, 200, 200, 300, 0x00FA0C1D);
 	draw_map(init);
-	line(init->coords[0], init->coords[1], init->coords[2], init->coords[3], 0x00FA0C1D);
 	return (0);
 }
 int		deal_key(int button, int x, int y, t_init *init)
@@ -217,27 +247,25 @@ int		deal_key(int button, int x, int y, t_init *init)
 
 	if (button == 1)
 	{
-		init->coords[0] = x;
-		init->coords[1] = y;
-		init->coords[4] = 1;
 		init->button = 1;
 	}
 	else if (button == 2)
 	{
-		init->coords[2] = x;
-		init->coords[3] = y;
-		init->coords[4] = 0;
 		init->button = 2;
 	}
 	else if (button == 4)
 	{
-		init->s_map->scale += 0.1;
+		init->s_map->scale += 1;
+		k_init(init);
+		normalization(init);
 	}
 	else if (button == 5)
 	{
-		if (init->s_map->scale > 0.1)
+		if (init->s_map->scale > 1)
 		{
-			init->s_map->scale -= 0.1;
+			init->s_map->scale -= 1;
+			k_init(init);
+			normalization(init);
 		}
 	}
 	mlx_clear_window(init->mlx_ptr, init->win_ptr);
@@ -247,7 +275,7 @@ int		deal_key(int button, int x, int y, t_init *init)
 //	line(200, 200, 200, 300, 0x00FA0C1D);
 	draw_map(init);
 	clock_t t = clock();
-	line(init->coords[0], init->coords[1], init->coords[2], init->coords[3], 0x00FA0C1D);
+
 
 	t = clock() - t;
 //	if (key == 51)
@@ -386,6 +414,13 @@ t_map	*malloc_map(int fd)
 
 }
 
+t_coords	**malloc_coords(t_init *init)
+{
+	t_coords	**coords;
+
+	coords = (t_coords**)malloc(sizeof(t_init*) * init->s_map->height);
+}
+
 t_init	*malloc_init(int fd)
 {
 	t_init	*init;
@@ -400,10 +435,34 @@ t_init	*malloc_init(int fd)
 	init->coords[3] = 0;
 	init->coords[4] = 0;
 	init->button = 0;
+	init->last_x = -1;
+	init->last_y = -1;
 	init->s_map = malloc_map(fd);
-	init->s_map->scale = 0.1;
+	init->coords = malloc_coords(init);
+	init->s_map->scale = 1;
+	init->rad_x = 0;
+	init->rad_y = 0;
+	k_init(init);
+	normalization(init);
 	return (init);
 
+}
+
+void	key_press(int kc, t_init *init)
+{
+	if (kc == 126)
+	{
+		init->s_map->scale *= 2;
+	}
+	else if (kc == 125)
+	{
+		if (init->s_map->scale > 1)
+			init->s_map->scale /= 2;
+	}
+	k_init(init);
+	normalization(init);
+	mlx_clear_window(init->mlx_ptr, init->win_ptr);
+	draw_map(init);
 }
 
 int main(int ac, char **av) {
@@ -415,7 +474,7 @@ int main(int ac, char **av) {
 //	win_ptr = mlx_new_window(mlx_ptr, 1920, 1280, "mlx");
 //	if (ac != 2)
 //		exit(1);
-	fd = open("100-6.fdf", O_RDONLY);
+	fd = open("42.fdf", O_RDONLY);
 	if (fd < 0)
 		exit(1);
 	if (!(init = malloc_init(fd)))
@@ -425,6 +484,7 @@ int main(int ac, char **av) {
 	mlx_hook(init->win_ptr, 4, (1L << 17), deal_key, init);
 	mlx_hook(init->win_ptr, 5, (1L << 17), key_realise, init);
 	mlx_hook(win_ptr, 6, (1L << 17), move_mouse, init);
+	mlx_hook(win_ptr, 2, (1L << 17), key_press, init);
     mlx_loop(mlx_ptr);
     printf("Hello, World!\n");
 

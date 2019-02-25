@@ -35,7 +35,44 @@ int coords[5] = {0, 0, 0, 0, 0};
 //	}
 //}
 
+void	fill_coords(t_init *init)
+{
+	int x;
+	int y;
+	double s_y;
+	double s_x;
 
+	s_y = (double)(init->s_map->height - 1)/2;
+	s_x = (double)(init->s_map->width - 1)/2;
+	y = 0;
+//	init->coord[0] = init->n_x + (int)(s_x * init->k);
+//	init->coord[1] = init->n_y;
+//	init->coord[2] = init->n_x + (int)(s_x * init->k);
+//	init->coord[3] = init->n_y + (init->s_map->height - 1) * init->k;
+
+	init->coord[0] = init->n_x;
+	init->coord[1] = init->n_y + (int)(s_y * init->k);
+	init->coord[2] = init->n_x + (init->s_map->width - 1) * init->k;
+	init->coord[3] = init->n_y + (int)(s_y * init->k);
+
+	while (y < init->s_map->height)
+	{
+		x = 0;
+		while (x < init->s_map->width)
+		{
+			init->coords[y][x]->x = (init->s_map->width - 1) * init->k / 2 - ((init->s_map->width - 1) * init->k - x * init->k);
+			init->coords[y][x]->y = (init->s_map->height - 1) * init->k /2 - y * init->k;
+			init->coords[y][x]->z = init->s_map->map[y][x] * 10;
+			init->coords[y][x]->x = init->coords[y][x]->x;
+			init->coords[y][x]->y = (int)(init->coords[y][x]->y * cos(init->rad_y) + init->coords[y][x]->z * sin(init->rad_y));
+			init->coords[y][x]->z = (int)(-(init->coords[y][x]->y) * sin(init->rad_y) + init->coords[y][x]->z * cos(init->rad_y));
+			init->coords[y][x]->x = (int)(init->coords[y][x]->x * cos(init->rad_x) + init->coords[y][x]->z * sin(init->rad_x));
+			init->coords[y][x]->z = (int)(-(init->coords[y][x]->x) * sin(init->rad_x) + init->coords[y][x]->z * cos(init->rad_x));
+			x++;
+		}
+		y++;
+	}
+}
 
 void line(int x0, int y0, int x1, int y1, int color) {
 //	double size;
@@ -151,16 +188,74 @@ void	normalization(t_init *init)
 {
 	int map_x;
 	int map_y;
+//	int x;
+//	int	y;
 
 	map_x = (int)(init->k * (init->s_map->width - 1) * cos(init->rad_x));
 	init->n_x = (1920 - map_x)/2;
 	map_y = (int)(init->k * (init->s_map->height - 1) * cos(init->rad_y));
 	init->n_y = (1080 - map_y)/2;
-}
+	if (init->coords == NULL)
+		return ;
+//	y = 0;
+//	while (y < init->s_map->height)
+//	{
+//		x = 0;
+//		while (x < init->s_map->width)
+//		{
+//			init->coords[y][x]->x = init->coords[y][x]->x;
+//			init->coords[y][x]->y = (int)(init->coords[y][x]->y * cos(init->rad_x) + init->coords[y][x]->z * sin(init->rad_x));
+//			init->coords[y][x]->z = (int)(-(init->coords[y][x]->y) * sin(init->rad_x) + init->coords[y][x]->z * cos(init->rad_x));
+//			init->coords[y][x]->x = (int)(init->coords[y][x]->x * cos(init->rad_y) + init->coords[y][x]->z * sin(init->rad_y));
+//			init->coords[y][x]->z = (int)(-(init->coords[y][x]->x) * sin(init->rad_y) + init->coords[y][x]->z * cos(init->rad_y));
+//			x++;
+//		}
+//		y++;
+//	}
+	}
 
 void	k_init(t_init *init)
 {
 	init->k = init->s_map->scale;
+}
+
+void	draw_green_map(t_init *init)
+{
+	int	x;
+	int y;
+	int c[2];
+
+	c[0] = (init->s_map->width - 1) * init->k / 2;
+	c[1] = (init->s_map->height - 1) * init->k / 2;
+	y = 0;
+	while (y < init->s_map->height)
+	{
+		x = 0;
+		while (x < init->s_map->width)
+		{
+			if (x == 0 && y == 0)
+			{
+				x++;
+				continue;
+			}
+			else if (y == 0 && x > 0)
+			{
+				line(init->n_x + c[0] + init->coords[y][x]->x, init->n_y + c[1] - init->coords[y][x]->y, init->n_x + c[0] + init->coords[y][x - 1]->x, init->n_y + c[1] - init->coords[y][x - 1]->y, 0x00D800);
+			}
+			else if (y != 0 && x != 0)
+			{
+				line(init->n_x + c[0] + init->coords[y][x]->x, init->n_y + c[1] - init->coords[y][x]->y, init->n_x + c[0] + init->coords[y][x - 1]->x, init->n_y + c[1] - init->coords[y][x - 1]->y, 0x00D800);
+				line(init->n_x + c[0] + init->coords[y][x]->x, init->n_y + c[1] - init->coords[y][x]->y, init->n_x + c[0] + init->coords[y - 1][x]->x, init->n_y + c[1] - init->coords[y - 1][x]->y, 0x00D800);
+			}
+			else if (y != 0 && x == 0)
+			{
+				line(init->n_x + c[0] + init->coords[y][x]->x, init->n_y + c[1] - init->coords[y][x]->y, init->n_x + c[0] + init->coords[y - 1][x]->x, init->n_y + c[1] - init->coords[y - 1][x]->y, 0x00D800);
+			}
+			x++;
+		}
+		y++;
+	}
+
 }
 
 void	draw_map(t_init *init)
@@ -209,6 +304,8 @@ int		move_mouse(int x, int y, t_init *init)
 		{
 			init->rad_y += (y - init->last_y) * 0.0014544 * 4;
 			init->last_y = y;
+//			init->rad_y = (y - init->last_y) * 0.0014544 * 4;
+//			init->last_y = y;
 		}
 		else
 		{
@@ -218,6 +315,8 @@ int		move_mouse(int x, int y, t_init *init)
 		{
 			init->rad_x += (x - init->last_x) * 0.0014544 * 4;
 			init->last_x = x;
+//			init->rad_x = (x - init->last_x) * 0.0014544 * 4;
+//			init->last_x = x;
 		}
 		else
 		{
@@ -235,7 +334,10 @@ int		move_mouse(int x, int y, t_init *init)
 //	mlx_string_put(init->mlx_ptr, init->win_ptr, 250, 270, 0x00FA0C1D, ft_itoa(x));
 //	mlx_string_put(init->mlx_ptr, init->win_ptr, 300, 270, 0x00FA0C1D, ft_itoa(y));
 //	line(200, 200, 200, 300, 0x00FA0C1D);
-	draw_map(init);
+	//draw_map(init);
+	fill_coords(init);
+	//line(init->coord[0], init->coord[1], init->coord[2], init->coord[3], 0x00D800);
+	draw_green_map(init);
 	return (0);
 }
 int		deal_key(int button, int x, int y, t_init *init)
@@ -273,7 +375,10 @@ int		deal_key(int button, int x, int y, t_init *init)
 //	mlx_string_put(init->mlx_ptr, init->win_ptr, 250, 270, 0x00FA0C1D, ft_itoa(x));
 //	mlx_string_put(init->mlx_ptr, init->win_ptr, 300, 270, 0x00FA0C1D, ft_itoa(y));
 //	line(200, 200, 200, 300, 0x00FA0C1D);
-	draw_map(init);
+	//draw_map(init);
+	fill_coords(init);
+	//line(init->coord[0], init->coord[1], init->coord[2], init->coord[3], 0x00D800);
+	draw_green_map(init);
 	clock_t t = clock();
 
 
@@ -393,14 +498,11 @@ t_map	*malloc_map(int fd)
 	t_map	*map;
 	char 	*line;
 
-	if (!(map = (t_map*)malloc(sizeof(t_map))))
-		return (0);
+	map = (t_map*)malloc(sizeof(t_map));
 	if ((get_next_line(fd, &line) <= 0))
 		return (0);
-	if (!(map->width = count_width(line)))
-		return (0);
-	if (!(map->map = (int**)malloc(sizeof(int *))))
-		return (0);
+	map->width = count_width(line);
+	map->map = (int**)malloc(sizeof(int *));
 	*(map->map) = atoi_line(line, map->width);
 	map->height = 1;
 	free(line);
@@ -414,11 +516,33 @@ t_map	*malloc_map(int fd)
 
 }
 
-t_coords	**malloc_coords(t_init *init)
-{
-	t_coords	**coords;
 
-	coords = (t_coords**)malloc(sizeof(t_init*) * init->s_map->height);
+
+t_coords	***malloc_coords(t_init *init)
+{
+	t_coords	***coords;
+	int 		i;
+	int 		j;
+
+	coords = (t_coords***)malloc(sizeof(t_coords**) * (init->s_map->height));
+
+	i = 0;
+	while (i < init->s_map->height)
+	{
+		coords[i] = (t_coords**)malloc(sizeof(t_coords*) * init->s_map->width);
+		j = 0;
+		while (j < init->s_map->width)
+		{
+			coords[i][j] = (t_coords*)malloc(sizeof(t_coords));
+			coords[i][j]->z = 0;
+			coords[i][j]->x = 0;
+			coords[i][j]->y = 0;
+			j++;
+		}
+		i++;
+
+	}
+	return (coords);
 }
 
 t_init	*malloc_init(int fd)
@@ -429,12 +553,6 @@ t_init	*malloc_init(int fd)
 		return (0);
 	init->mlx_ptr = mlx_init();
 	init->win_ptr = mlx_new_window(init->mlx_ptr, 1920, 1080, "mlx");
-	init->coords[0] = 0;
-	init->coords[1] = 0;
-	init->coords[2] = 0;
-	init->coords[3] = 0;
-	init->coords[4] = 0;
-	init->button = 0;
 	init->last_x = -1;
 	init->last_y = -1;
 	init->s_map = malloc_map(fd);
@@ -442,13 +560,18 @@ t_init	*malloc_init(int fd)
 	init->s_map->scale = 1;
 	init->rad_x = 0;
 	init->rad_y = 0;
+	init->coord[0] = 0;
+	init->coord[1] = 0;
+	init->coord[2] = 0;
+	init->coord[3] = 0;
 	k_init(init);
 	normalization(init);
+	fill_coords(init);
 	return (init);
 
 }
 
-void	key_press(int kc, t_init *init)
+int	key_press(int kc, t_init *init)
 {
 	if (kc == 126)
 	{
@@ -463,6 +586,7 @@ void	key_press(int kc, t_init *init)
 	normalization(init);
 	mlx_clear_window(init->mlx_ptr, init->win_ptr);
 	draw_map(init);
+	return (0);
 }
 
 int main(int ac, char **av) {
@@ -481,10 +605,10 @@ int main(int ac, char **av) {
 		exit(1);
 	mlx_ptr = init->mlx_ptr;
 	win_ptr = init->win_ptr;
-	mlx_hook(init->win_ptr, 4, (1L << 17), deal_key, init);
-	mlx_hook(init->win_ptr, 5, (1L << 17), key_realise, init);
-	mlx_hook(win_ptr, 6, (1L << 17), move_mouse, init);
-	mlx_hook(win_ptr, 2, (1L << 17), key_press, init);
+	mlx_hook(init->win_ptr, 4, (1L << 17), deal_key, (void*)init);
+	mlx_hook(init->win_ptr, 5, (1L << 17), key_realise, (void*)init);
+	mlx_hook(win_ptr, 6, (1L << 17), move_mouse, (void*)init);
+	mlx_hook(win_ptr, 2, (1L << 17), key_press, (void*)init);
     mlx_loop(mlx_ptr);
     printf("Hello, World!\n");
 

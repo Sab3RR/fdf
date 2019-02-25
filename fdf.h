@@ -41,6 +41,7 @@ typedef struct	s_init
 	double 		rad_y;
 	int 		last_x;
 	int 		last_y;
-	t_coords	**coords;
+	t_coords	***coords;
+	int 		coord[4];
 }				t_init;
 #endif //FDF_FDF_H

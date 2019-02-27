@@ -39,6 +39,7 @@ typedef struct	s_init
 	int 		n_x;
 	double 		rad_x;
 	double 		rad_y;
+	double 		rad_z;
 	int 		last_x;
 	int 		last_y;
 	t_coords	***coords;

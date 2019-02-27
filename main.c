@@ -41,6 +41,9 @@ void	fill_coords(t_init *init)
 	int y;
 	double s_y;
 	double s_x;
+	int xx;
+	int yy;
+	int zz;
 
 	s_y = (double)(init->s_map->height - 1)/2;
 	s_x = (double)(init->s_map->width - 1)/2;
@@ -62,12 +65,21 @@ void	fill_coords(t_init *init)
 		{
 			init->coords[y][x]->x = (init->s_map->width - 1) * init->k / 2 - ((init->s_map->width - 1) * init->k - x * init->k);
 			init->coords[y][x]->y = (init->s_map->height - 1) * init->k /2 - y * init->k;
-			init->coords[y][x]->z = init->s_map->map[y][x] * 10;
-			init->coords[y][x]->x = init->coords[y][x]->x;
-			init->coords[y][x]->y = (int)(init->coords[y][x]->y * cos(init->rad_y) + init->coords[y][x]->z * sin(init->rad_y));
-			init->coords[y][x]->z = (int)(-(init->coords[y][x]->y) * sin(init->rad_y) + init->coords[y][x]->z * cos(init->rad_y));
-			init->coords[y][x]->x = (int)(init->coords[y][x]->x * cos(init->rad_x) + init->coords[y][x]->z * sin(init->rad_x));
-			init->coords[y][x]->z = (int)(-(init->coords[y][x]->x) * sin(init->rad_x) + init->coords[y][x]->z * cos(init->rad_x));
+			init->coords[y][x]->z = init->s_map->map[y][x] * 5;
+		//	init->coords[y][x]->x = init->coords[y][x]->x;
+			xx = init->coords[y][x]->x;
+			yy = init->coords[y][x]->y;
+			zz = init->coords[y][x]->z;
+			init->coords[y][x]->y = (int)(yy * cos(init->rad_y) + zz * sin(init->rad_y));
+			init->coords[y][x]->z = (int)(-(yy) * sin(init->rad_y) + zz * cos(init->rad_y));
+			yy = init->coords[y][x]->y;
+			zz = init->coords[y][x]->z;
+			init->coords[y][x]->x = (int)(xx * cos(init->rad_x) + zz * sin(init->rad_x));
+			init->coords[y][x]->z = (int)(-(xx) * sin(init->rad_x) + zz * cos(init->rad_x));
+			xx = init->coords[y][x]->x;
+			zz = init->coords[y][x]->z;
+			init->coords[y][x]->x = (int)(xx * cos(init->rad_z) + yy * sin(init->rad_z));
+			init->coords[y][x]->y = (int)(-(xx) * sin(init->rad_z) + yy * cos(init->rad_z));
 			x++;
 		}
 		y++;
@@ -191,9 +203,9 @@ void	normalization(t_init *init)
 //	int x;
 //	int	y;
 
-	map_x = (int)(init->k * (init->s_map->width - 1) * cos(init->rad_x));
+	map_x = (int)(init->k * (init->s_map->width - 1));
 	init->n_x = (1920 - map_x)/2;
-	map_y = (int)(init->k * (init->s_map->height - 1) * cos(init->rad_y));
+	map_y = (int)(init->k * (init->s_map->height - 1));
 	init->n_y = (1080 - map_y)/2;
 	if (init->coords == NULL)
 		return ;
@@ -302,7 +314,11 @@ int		move_mouse(int x, int y, t_init *init)
 	{
 		if (init->last_y != -1)
 		{
-			init->rad_y += (y - init->last_y) * 0.0014544 * 4;
+			if (init->rad_y > 6.28319)
+				init->rad_y = init->rad_y - 6.28319;
+			if (init->rad_y < -6.28319)
+				init->rad_y = init->rad_y + 6.28319;
+			init->rad_y -= (y - init->last_y) * 0.0014544 * 4;
 			init->last_y = y;
 //			init->rad_y = (y - init->last_y) * 0.0014544 * 4;
 //			init->last_y = y;
@@ -313,6 +329,10 @@ int		move_mouse(int x, int y, t_init *init)
 		}
 		if (init->last_x != -1)
 		{
+			if (init->rad_x > 6.28319)
+				init->rad_x = init->rad_x - 6.28319;
+			if (init->rad_x < 0)
+				init->rad_x = init->rad_x + 6.28319;
 			init->rad_x += (x - init->last_x) * 0.0014544 * 4;
 			init->last_x = x;
 //			init->rad_x = (x - init->last_x) * 0.0014544 * 4;
@@ -336,8 +356,11 @@ int		move_mouse(int x, int y, t_init *init)
 //	line(200, 200, 200, 300, 0x00FA0C1D);
 	//draw_map(init);
 	fill_coords(init);
-	//line(init->coord[0], init->coord[1], init->coord[2], init->coord[3], 0x00D800);
+//	line(init->coord[0], init->coord[1], init->coord[2], init->coord[3], 0x00Dfff);
 	draw_green_map(init);
+//	system("clear");
+//	printf("%f\n", init->rad_x);
+//	printf("%f\n", init->rad_y);
 	return (0);
 }
 int		deal_key(int button, int x, int y, t_init *init)
@@ -560,6 +583,7 @@ t_init	*malloc_init(int fd)
 	init->s_map->scale = 1;
 	init->rad_x = 0;
 	init->rad_y = 0;
+	init->rad_z = 0;
 	init->coord[0] = 0;
 	init->coord[1] = 0;
 	init->coord[2] = 0;
@@ -582,11 +606,55 @@ int	key_press(int kc, t_init *init)
 		if (init->s_map->scale > 1)
 			init->s_map->scale /= 2;
 	}
+	else if (kc == 82)
+	{
+		init->rad_x = 0;
+		init->rad_y = 0;
+		init->rad_z = 0;
+	}
+	else if (kc == 83)
+	{
+		init->rad_x = 1.5708;
+		init->rad_y = 0;
+		init->rad_z = 0;
+ 	}
+	else if (kc == 84)
+	{
+		init->rad_x = 0;
+		init->rad_y = 1.5708;
+		init->rad_z = 0;
+	}
 	k_init(init);
 	normalization(init);
 	mlx_clear_window(init->mlx_ptr, init->win_ptr);
-	draw_map(init);
+	fill_coords(init);
+	draw_green_map(init);
 	return (0);
+}
+
+int 	loop_hook(t_init *init)
+{
+//	char *str;
+//	clock_t t;
+//
+//	if (init->t == 0)
+//		init->t = clock();
+//	t = clock();
+//	mlx_clear_window(init->mlx_ptr, init->win_ptr);
+//	if (t - init->t > CLOCKS_PER_SEC)
+//	{
+//		str = ft_itoa(init->cadr);
+//		mlx_string_put(init->mlx_ptr, init->win_ptr, 250, 250, 0x00FA0C1D, str);
+//		init->t = clock();
+//		free(str);
+//	}
+//	k_init(init);
+//	normalization(init);
+//	fill_coords(init);
+//	draw_green_map(init);
+//	init->cadr += 1;
+	return (0);
+
 }
 
 int main(int ac, char **av) {
@@ -598,7 +666,7 @@ int main(int ac, char **av) {
 //	win_ptr = mlx_new_window(mlx_ptr, 1920, 1280, "mlx");
 //	if (ac != 2)
 //		exit(1);
-	fd = open("42.fdf", O_RDONLY);
+	fd = open("20-60.fdf", O_RDONLY);
 	if (fd < 0)
 		exit(1);
 	if (!(init = malloc_init(fd)))
@@ -609,6 +677,7 @@ int main(int ac, char **av) {
 	mlx_hook(init->win_ptr, 5, (1L << 17), key_realise, (void*)init);
 	mlx_hook(win_ptr, 6, (1L << 17), move_mouse, (void*)init);
 	mlx_hook(win_ptr, 2, (1L << 17), key_press, (void*)init);
+	mlx_loop_hook(win_ptr, loop_hook, (void*)init);
     mlx_loop(mlx_ptr);
     printf("Hello, World!\n");
 
